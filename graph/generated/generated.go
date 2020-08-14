@@ -59,13 +59,13 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		AlleOppslag   func(childComplexity int) int
 		EnkeltOppslag func(childComplexity int, id string) int
-		Oppslag       func(childComplexity int) int
 	}
 }
 
 type QueryResolver interface {
-	Oppslag(ctx context.Context) ([]*model.Oppslag, error)
+	AlleOppslag(ctx context.Context) ([]*model.Oppslag, error)
 	EnkeltOppslag(ctx context.Context, id string) (*model.Oppslag, error)
 }
 
@@ -154,6 +154,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Oppslag.Oppslag(childComplexity), true
 
+	case "Query.alleOppslag":
+		if e.complexity.Query.AlleOppslag == nil {
+			break
+		}
+
+		return e.complexity.Query.AlleOppslag(childComplexity), true
+
 	case "Query.enkeltOppslag":
 		if e.complexity.Query.EnkeltOppslag == nil {
 			break
@@ -165,13 +172,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.EnkeltOppslag(childComplexity, args["id"].(string)), true
-
-	case "Query.oppslag":
-		if e.complexity.Query.Oppslag == nil {
-			break
-		}
-
-		return e.complexity.Query.Oppslag(childComplexity), true
 
 	}
 	return 0, false
@@ -245,7 +245,7 @@ type Definisjon {
 }
 
 type Query {
-  oppslag: [Oppslag!]!
+  alleOppslag: [Oppslag!]!
   enkeltOppslag(id: ID!): Oppslag
 }`, BuiltIn: false},
 }
@@ -650,7 +650,7 @@ func (ec *executionContext) _Oppslag_definisjoner(ctx context.Context, field gra
 	return ec.marshalODefinisjon2ᚕᚖgithubᚗcomᚋpergpauᚋgoᚑgraphqlᚑjishonoᚋgraphᚋmodelᚐDefinisjon(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_oppslag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_alleOppslag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -667,7 +667,7 @@ func (ec *executionContext) _Query_oppslag(ctx context.Context, field graphql.Co
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Oppslag(rctx)
+		return ec.resolvers.Query().AlleOppslag(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1954,7 +1954,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "oppslag":
+		case "alleOppslag":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -1962,7 +1962,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_oppslag(ctx, field)
+				res = ec._Query_alleOppslag(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

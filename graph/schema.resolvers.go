@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/pergpau/go-graphql-jishono/graph/generated"
 	"github.com/pergpau/go-graphql-jishono/graph/model"
@@ -13,20 +12,13 @@ import (
 	"github.com/pergpau/go-graphql-jishono/services/oppslagservice"
 )
 
-func (r *queryResolver) Oppslag(ctx context.Context) ([]*model.Oppslag, error) {
+func (r *queryResolver) AlleOppslag(ctx context.Context) ([]*model.Oppslag, error) {
 	var resultOppslag []*model.Oppslag
 	var dbOppslag []oppslagservice.Oppslag
 	dbOppslag = oppslagservice.GetAll()
 	for _, oppslag := range dbOppslag {
-		var resultDefinisjoner []*model.Definisjon
-		var definisjoner []definisjonservice.Definisjon
-		definisjoner = definisjonservice.GetDefinisjonerByLemmaID(oppslag.ID)
-		for _, definisjon := range definisjoner {
-			resultDefinisjoner = append(resultDefinisjoner, &model.Definisjon{ID: definisjon.ID,
-				Prioritet: definisjon.Prioritet, Definisjon: definisjon.Definisjon})
-		}
 		resultOppslag = append(resultOppslag, &model.Oppslag{ID: oppslag.ID,
-			Oppslag: oppslag.Oppslag, BoyTabell: oppslag.BoyTabell, Definisjoner: resultDefinisjoner})
+			Oppslag: oppslag.Oppslag, BoyTabell: oppslag.BoyTabell})
 	}
 	return resultOppslag, nil
 }
@@ -50,13 +42,3 @@ func (r *queryResolver) EnkeltOppslag(ctx context.Context, id string) (*model.Op
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *queryResolver) DefinisjonerFraOppslag(ctx context.Context, id string) ([]*model.Definisjon, error) {
-	panic(fmt.Errorf("not implemented"))
-}
