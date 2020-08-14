@@ -1,0 +1,25 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Oppslag {
+  id: ID!
+  oppslag: String!
+  ledd: String
+  boyTabell: String
+  definisjoner: [Definisjon]
+
+}
+
+type Definisjon {
+  id: ID!
+  oppslagId: ID!
+  prioritet: Int!
+  definisjon: String!
+  opprettet: String!
+}
+
+type Query {
+  oppslag: [Oppslag!]!
+  enkeltOppslag(id: ID!): Oppslag
+}
