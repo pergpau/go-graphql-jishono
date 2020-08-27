@@ -5,20 +5,28 @@ package graph
 
 import (
 	"context"
-
 	"github.com/pergpau/go-graphql-jishono/graph/generated"
 	"github.com/pergpau/go-graphql-jishono/graph/model"
 	"github.com/pergpau/go-graphql-jishono/services/definisjonservice"
 	"github.com/pergpau/go-graphql-jishono/services/oppslagservice"
 )
 
-func (r *queryResolver) AlleOppslag(ctx context.Context) ([]*model.Oppslag, error) {
+func (r *queryResolver) AlleOppslag(ctx context.Context, sokeord string) ([]*model.Oppslag, error) {
 	var resultOppslag []*model.Oppslag
+	var resultDefinisjoner []*model.Definisjon
 	var dbOppslag []oppslagservice.Oppslag
-	dbOppslag = oppslagservice.GetAll()
+	var definisjoner []definisjonservice.Definisjon
+
+	dbOppslag = oppslagservice.GetSearchResults(sokeord)
 	for _, oppslag := range dbOppslag {
+		definisjoner = definisjonservice.GetDefinisjonerByLemmaID(oppslag.ID)
+		for _, definisjon := range definisjoner {
+			resultDefinisjoner = append(resultDefinisjoner, &model.Definisjon{ID: definisjon.ID,
+				Prioritet: definisjon.Prioritet, Definisjon: definisjon.Definisjon, Opprettet: definisjon.Opprettet})
+		}
 		resultOppslag = append(resultOppslag, &model.Oppslag{ID: oppslag.ID,
-			Oppslag: oppslag.Oppslag, BoyTabell: oppslag.BoyTabell})
+			Oppslag: oppslag.Oppslag, BoyTabell: oppslag.BoyTabell, Definisjoner: resultDefinisjoner})
+		resultDefinisjoner = nil
 	}
 	return resultOppslag, nil
 }

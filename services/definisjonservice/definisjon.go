@@ -3,7 +3,6 @@ package definisjonservice
 import (
 	database "github.com/pergpau/go-graphql-jishono/db"
 	"log"
-	"fmt"
 )
 
 type Definisjon struct {
@@ -29,7 +28,6 @@ func GetDefinisjonerByLemmaID(id string) []Definisjon{
 		}
 		definisjoner = append(definisjoner, definisjon)
 	}
-	fmt.Println(definisjoner)
 	return definisjoner
 }
 

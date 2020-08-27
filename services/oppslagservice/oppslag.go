@@ -13,13 +13,16 @@ type Oppslag struct {
 	Definisjoner *definisjonservice.Definisjon
   }
 
-func GetAll() []Oppslag {
-	stmt, err := database.Db.Prepare("SELECT lemma_id, oppslag, boy_tabell FROM oppslag")
+func GetSearchResults(sokeord string) []Oppslag {
+	stmt, err := database.Db.Prepare(	`SELECT lemma_id, oppslag, boy_tabell 
+										FROM oppslag
+										WHERE oppslag LIKE ?
+										AND lemma_id IN (SELECT lemma_id FROM definisjon) `)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query()
+	rows, err := stmt.Query(sokeord + "%")
 	if err != nil {
 		log.Fatal(err)
 	}
