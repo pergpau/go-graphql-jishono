@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strconv"
 	"sync"
+	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -249,7 +250,7 @@ type Definisjon {
 }
 
 type Query {
-  alleOppslag(sokeord: String!): [Oppslag]
+  alleOppslag(sokeord: String!): [Oppslag]!
   enkeltOppslag(id: ID!): Oppslag
 }`, BuiltIn: false},
 }
@@ -699,11 +700,14 @@ func (ec *executionContext) _Query_alleOppslag(ctx context.Context, field graphq
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.([]*model.Oppslag)
 	fc.Result = res
-	return ec.marshalOOppslag2ᚕᚖgithubᚗcomᚋpergpauᚋgoᚑgraphqlᚑjishonoᚋgraphᚋmodelᚐOppslag(ctx, field.Selections, res)
+	return ec.marshalNOppslag2ᚕᚖgithubᚗcomᚋpergpauᚋgoᚑgraphqlᚑjishonoᚋgraphᚋmodelᚐOppslag(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_enkeltOppslag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1985,6 +1989,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_alleOppslag(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "enkeltOppslag":
@@ -2298,6 +2305,43 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNOppslag2ᚕᚖgithubᚗcomᚋpergpauᚋgoᚑgraphqlᚑjishonoᚋgraphᚋmodelᚐOppslag(ctx context.Context, sel ast.SelectionSet, v []*model.Oppslag) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOOppslag2ᚖgithubᚗcomᚋpergpauᚋgoᚑgraphqlᚑjishonoᚋgraphᚋmodelᚐOppslag(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -2616,46 +2660,6 @@ func (ec *executionContext) marshalODefinisjon2ᚖgithubᚗcomᚋpergpauᚋgoᚑ
 
 func (ec *executionContext) marshalOOppslag2githubᚗcomᚋpergpauᚋgoᚑgraphqlᚑjishonoᚋgraphᚋmodelᚐOppslag(ctx context.Context, sel ast.SelectionSet, v model.Oppslag) graphql.Marshaler {
 	return ec._Oppslag(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOOppslag2ᚕᚖgithubᚗcomᚋpergpauᚋgoᚑgraphqlᚑjishonoᚋgraphᚋmodelᚐOppslag(ctx context.Context, sel ast.SelectionSet, v []*model.Oppslag) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOOppslag2ᚖgithubᚗcomᚋpergpauᚋgoᚑgraphqlᚑjishonoᚋgraphᚋmodelᚐOppslag(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
 }
 
 func (ec *executionContext) marshalOOppslag2ᚖgithubᚗcomᚋpergpauᚋgoᚑgraphqlᚑjishonoᚋgraphᚋmodelᚐOppslag(ctx context.Context, sel ast.SelectionSet, v *model.Oppslag) graphql.Marshaler {

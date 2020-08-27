@@ -20,6 +20,6 @@ type Definisjon {
 }
 
 type Query {
-  alleOppslag(sokeord: String!): [Oppslag]
+  alleOppslag(sokeord: String!): [Oppslag]!
   enkeltOppslag(id: ID!): Oppslag
 }

@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+
 	"github.com/pergpau/go-graphql-jishono/graph/generated"
 	"github.com/pergpau/go-graphql-jishono/graph/model"
 	"github.com/pergpau/go-graphql-jishono/services/definisjonservice"
